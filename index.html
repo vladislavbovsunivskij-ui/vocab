@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>VOCAB</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0f0f0f;
+    color: #f0f0f0;
+    font-family: 'DM Mono', 'Courier New', monospace;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 0 16px 60px;
+  }
+
+  #app { width: 100%; max-width: 520px; }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 0 20px;
+    border-bottom: 1px solid #222;
+    margin-bottom: 28px;
+  }
+
+  .logo { font-size: 18px; font-weight: 700; letter-spacing: 2px; cursor: pointer; color: #f0f0f0; text-decoration: none; }
+  .word-count { font-size: 12px; color: #555; }
+
+  /* Buttons */
+  .btn {
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 12px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    border: 1px solid #2a2a2a;
+    background: transparent;
+    color: #555;
+    transition: opacity 0.2s;
+  }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn.primary { background: #f0f0f0; color: #0f0f0f; border-color: #f0f0f0; }
+  .btn.danger { color: #a05050; border-color: #2a1818; }
+  .btn.full { width: 100%; }
+  .btn-row { display: flex; gap: 12px; }
+
+  /* Screens */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 8px; margin-bottom: 24px; }
+  .tab {
+    padding: 6px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    border: 1px solid #2a2a2a;
+    background: transparent;
+    color: #555;
+    font-family: inherit;
+    letter-spacing: 1px;
+  }
+  .tab.active { background: #f0f0f0; color: #0f0f0f; border-color: #f0f0f0; }
+
+  /* Textarea */
+  textarea, select {
+    width: 100%;
+    background: #151515;
+    color: #f0f0f0;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    padding: 14px;
+    font-family: inherit;
+    font-size: 13px;
+    line-height: 1.8;
+    resize: vertical;
+    margin-bottom: 12px;
+    outline: none;
+  }
+  select {
+    resize: none;
+    padding: 6px 10px;
+    width: auto;
+    margin-bottom: 0;
+    cursor: pointer;
+  }
+
+  .lang-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; color: #333; font-size: 14px; }
+  .hint { font-size: 11px; color: #444; margin-bottom: 8px; letter-spacing: 0.5px; }
+
+  .error { color: #e05050; font-size: 12px; margin-bottom: 10px; }
+
+  /* Word list */
+  .section-label { font-size: 11px; color: #555; letter-spacing: 1px; margin-bottom: 12px; }
+  .word-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #1a1a1a;
+  }
+  .word-item .word { color: #f0f0f0; }
+  .word-item-right { display: flex; align-items: center; gap: 12px; }
+  .word-item .trans { color: #555; }
+  .del-btn { color: #333; cursor: pointer; font-size: 14px; border: none; background: none; font-family: inherit; }
+  .del-btn:hover { color: #888; }
+
+  .empty { text-align: center; color: #333; font-size: 14px; margin-top: 60px; }
+  .empty .emoji { font-size: 40px; margin-bottom: 16px; }
+
+  /* Study */
+  .progress-row { display: flex; justify-content: space-between; font-size: 11px; color: #444; margin-bottom: 12px; }
+  .progress-bar { height: 2px; background: #1a1a1a; border-radius: 2px; margin-bottom: 40px; }
+  .progress-fill { height: 100%; background: #f0f0f0; border-radius: 2px; transition: width 0.3s; }
+
+  .card {
+    background: #151515;
+    border: 1px solid #222;
+    border-radius: 12px;
+    padding: 48px 32px;
+    text-align: center;
+    cursor: pointer;
+    min-height: 160px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 32px;
+    user-select: none;
+    transition: border-color 0.2s;
+  }
+  .card:active { border-color: #444; }
+  .card-lang { font-size: 11px; color: #333; letter-spacing: 2px; margin-bottom: 16px; }
+  .card-word { font-size: 28px; font-weight: 700; letter-spacing: 1px; }
+  .card-hint { font-size: 11px; color: #333; margin-top: 20px; }
+
+  .answer-row { display: flex; gap: 12px; }
+  .btn.wrong { color: #a05050; border-color: #2a1818; flex: 1; }
+  .btn.right { flex: 1; }
+
+  /* Done screen */
+  .done { text-align: center; padding-top: 40px; }
+  .done .big-emoji { font-size: 48px; margin-bottom: 24px; }
+  .done .score { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+  .done .score-sub { font-size: 13px; color: #444; margin-bottom: 40px; }
+  .done .actions { display: flex; flex-direction: column; gap: 12px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <span class="logo" onclick="showScreen('home')">VOCAB</span>
+    <span class="word-count" id="word-count">0 слів</span>
+  </header>
+
+  <!-- HOME -->
+  <div class="screen active" id="screen-home">
+    <div class="btn-row" style="margin-bottom:32px">
+      <button class="btn primary" onclick="showScreen('add')">+ Додати слова</button>
+      <button class="btn" id="study-btn" onclick="startStudy()">▶ Вчити</button>
+    </div>
+    <div id="word-list-container"></div>
+  </div>
+
+  <!-- ADD -->
+  <div class="screen" id="screen-add">
+    <div class="tabs">
+      <button class="tab active" id="tab-auto" onclick="switchTab('auto')">АВТО ПЕРЕКЛАД</button>
+      <button class="tab" id="tab-manual" onclick="switchTab('manual')">ВРУЧНУ</button>
+    </div>
+
+    <!-- AUTO -->
+    <div id="mode-auto">
+      <div class="lang-row">
+        <select id="from-lang">
+          <option value="de">🇩🇪 DE</option>
+          <option value="en">🇬🇧 EN</option>
+          <option value="uk">🇺🇦 UK</option>
+          <option value="es">🇪🇸 ES</option>
+          <option value="fr">🇫🇷 FR</option>
+          <option value="pl">🇵🇱 PL</option>
+        </select>
+        →
+        <select id="to-lang">
+          <option value="uk" selected>🇺🇦 UK</option>
+          <option value="de">🇩🇪 DE</option>
+          <option value="en">🇬🇧 EN</option>
+          <option value="es">🇪🇸 ES</option>
+          <option value="fr">🇫🇷 FR</option>
+          <option value="pl">🇵🇱 PL</option>
+        </select>
+      </div>
+      <div class="hint">Вставляй слова — кожне з нового рядка</div>
+      <textarea id="auto-input" rows="8" placeholder="Hund&#10;Katze&#10;Haus&#10;..."></textarea>
+      <div class="error" id="auto-error"></div>
+      <button class="btn primary full" id="translate-btn" onclick="handleAutoTranslate()">Перекласти і додати</button>
+    </div>
+
+    <!-- MANUAL -->
+    <div id="mode-manual" style="display:none">
+      <div class="hint">Формат: слово - переклад (через дефіс, тире або 2+ пробіли)</div>
+      <textarea id="manual-input" rows="8" placeholder="Hund - собака&#10;Katze - кіт&#10;Haus - будинок"></textarea>
+      <div class="error" id="manual-error"></div>
+      <button class="btn primary full" onclick="handleManualAdd()">Додати слова</button>
+    </div>
+
+    <div style="margin-top:12px">
+      <button class="btn" onclick="showScreen('home')">← Назад</button>
+    </div>
+  </div>
+
+  <!-- STUDY -->
+  <div class="screen" id="screen-study">
+    <div class="progress-row">
+      <span id="progress-text">1 / 10</span>
+      <span id="correct-text">0 ✓</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    <div class="card" onclick="flipCard()" id="study-card">
+      <div class="card-lang" id="card-lang">DE</div>
+      <div class="card-word" id="card-word">-</div>
+      <div class="card-hint" id="card-hint">натисни щоб побачити переклад</div>
+    </div>
+    <div class="answer-row" id="answer-row" style="display:none">
+      <button class="btn wrong" onclick="answer('again')">✗ Не знав</button>
+      <button class="btn primary right" onclick="answer('ok')">✓ Знав</button>
+    </div>
+  </div>
+
+  <!-- DONE -->
+  <div class="screen" id="screen-done">
+    <div class="done">
+      <div class="big-emoji" id="done-emoji">🎉</div>
+      <div class="score" id="done-score">0 / 0</div>
+      <div class="score-sub">правильних відповідей</div>
+      <div class="actions">
+        <button class="btn primary" id="retry-wrong-btn" onclick="retryWrong()" style="display:none">Повторити помилки</button>
+        <button class="btn" onclick="startStudy()">Почати заново</button>
+        <button class="btn" onclick="showScreen('home')">← Головна</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── STATE ──────────────────────────────────────────────────
+  let words = JSON.parse(localStorage.getItem('vocab_words') || '[]');
+  let deck = [], idx = 0, flipped = false, results = [];
+
+  function save() {
+    localStorage.setItem('vocab_words', JSON.stringify(words));
+  }
+
+  // ── SCREENS ────────────────────────────────────────────────
+  function showScreen(name) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen-' + name).classList.add('active');
+    renderHome();
+  }
+
+  function renderHome() {
+    document.getElementById('word-count').textContent = words.length + ' слів';
+    const btn = document.getElementById('study-btn');
+    btn.textContent = '▶ Вчити (' + words.length + ')';
+    btn.disabled = words.length === 0;
+
+    const container = document.getElementById('word-list-container');
+    if (words.length === 0) {
+      container.innerHTML = `<div class="empty"><div class="emoji">📚</div><div>Слів поки немає.</div><div>Додай перші!</div></div>`;
+      return;
+    }
+    let html = '<div class="section-label">СПИСОК СЛІВ</div>';
+    words.forEach((w, i) => {
+      html += `<div class="word-item">
+        <span class="word">${esc(w.word)}</span>
+        <div class="word-item-right">
+          <span class="trans">${esc(w.translation)}</span>
+          <button class="del-btn" onclick="deleteWord(${i})">✕</button>
+        </div>
+      </div>`;
+    });
+    html += `<div style="margin-top:20px"><button class="btn" onclick="clearAll()">Очистити всі</button></div>`;
+    container.innerHTML = html;
+  }
+
+  function deleteWord(i) {
+    words.splice(i, 1);
+    save();
+    renderHome();
+  }
+
+  function clearAll() {
+    if (!confirm('Видалити всі слова?')) return;
+    words = [];
+    save();
+    renderHome();
+  }
+
+  function esc(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // ── TABS ───────────────────────────────────────────────────
+  let currentTab = 'auto';
+  function switchTab(tab) {
+    currentTab = tab;
+    document.getElementById('tab-auto').classList.toggle('active', tab === 'auto');
+    document.getElementById('tab-manual').classList.toggle('active', tab === 'manual');
+    document.getElementById('mode-auto').style.display = tab === 'auto' ? 'block' : 'none';
+    document.getElementById('mode-manual').style.display = tab === 'manual' ? 'block' : 'none';
+    document.getElementById('auto-error').textContent = '';
+    document.getElementById('manual-error').textContent = '';
+  }
+
+  // ── AUTO TRANSLATE ─────────────────────────────────────────
+  async function handleAutoTranslate() {
+    const input = document.getElementById('auto-input').value.trim();
+    const errorEl = document.getElementById('auto-error');
+    const btn = document.getElementById('translate-btn');
+    if (!input) return;
+
+    const lines = input.split('\n').map(l => l.trim()).filter(Boolean);
+    if (!lines.length) return;
+
+    const fromLang = document.getElementById('from-lang').value;
+    const toLang = document.getElementById('to-lang').value;
+
+    btn.disabled = true;
+    btn.textContent = 'Перекладаю...';
+    errorEl.textContent = '';
+
+    try {
+      const wordList = lines.map((w, i) => `${i + 1}. ${w}`).join('\n');
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          messages: [{
+            role: 'user',
+            content: `Translate these words/phrases from ${fromLang} to ${toLang}. Return ONLY a JSON array of strings with translations in the same order, no extra text, no markdown.\n\n${wordList}`
+          }]
+        })
+      });
+      const data = await res.json();
+      const text = data.content[0].text.trim().replace(/```json|```/g, '').trim();
+      const translations = JSON.parse(text);
+      const newWords = lines.map((w, i) => ({ word: w, translation: translations[i] || '?' }));
+      words = [...words, ...newWords];
+      save();
+      document.getElementById('auto-input').value = '';
+      showScreen('home');
+    } catch (e) {
+      errorEl.textContent = 'Помилка перекладу. Перевір інтернет-з\'єднання.';
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Перекласти і додати';
+  }
+
+  // ── MANUAL ADD ─────────────────────────────────────────────
+  function handleManualAdd() {
+    const input = document.getElementById('manual-input').value.trim();
+    const errorEl = document.getElementById('manual-error');
+    if (!input) return;
+
+    const pairs = input.split('\n').map(line => {
+      const parts = line.split(/\s*[-–—=|]\s*|\s{2,}/);
+      return { word: parts[0]?.trim(), translation: parts.slice(1).join(' ').trim() };
+    }).filter(p => p.word && p.translation);
+
+    if (!pairs.length) {
+      errorEl.textContent = 'Формат: слово - переклад (кожне на новому рядку)';
+      return;
+    }
+
+    words = [...words, ...pairs];
+    save();
+    document.getElementById('manual-input').value = '';
+    errorEl.textContent = '';
+    showScreen('home');
+  }
+
+  // ── STUDY ──────────────────────────────────────────────────
+  function startStudy() {
+    if (!words.length) return;
+    deck = [...words].sort(() => Math.random() - 0.5);
+    idx = 0;
+    flipped = false;
+    results = [];
+    showScreen('study');
+    renderCard();
+  }
+
+  function renderCard() {
+    const fromLang = document.getElementById('from-lang')?.value || 'de';
+    const toLang = document.getElementById('to-lang')?.value || 'uk';
+    const total = deck.length;
+    const correct = results.filter(r => r === 'ok').length;
+
+    document.getElementById('progress-text').textContent = (idx + 1) + ' / ' + total;
+    document.getElementById('correct-text').textContent = correct + ' ✓';
+    document.getElementById('progress-fill').style.width = (idx / total * 100) + '%';
+
+    document.getElementById('card-lang').textContent = flipped ? toLang.toUpperCase() : fromLang.toUpperCase();
+    document.getElementById('card-word').textContent = flipped ? deck[idx].translation : deck[idx].word;
+    document.getElementById('card-hint').style.display = flipped ? 'none' : 'block';
+    document.getElementById('answer-row').style.display = flipped ? 'flex' : 'none';
+  }
+
+  function flipCard() {
+    flipped = true;
+    renderCard();
+  }
+
+  function answer(res) {
+    results.push(res);
+    if (idx + 1 >= deck.length) {
+      showDone();
+    } else {
+      idx++;
+      flipped = false;
+      renderCard();
+    }
+  }
+
+  function showDone() {
+    const correct = results.filter(r => r === 'ok').length;
+    const total = deck.length;
+    const wrongCount = results.filter(r => r === 'again').length;
+
+    document.getElementById('done-emoji').textContent = correct === total ? '🎉' : '💪';
+    document.getElementById('done-score').textContent = correct + ' / ' + total;
+
+    const retryBtn = document.getElementById('retry-wrong-btn');
+    retryBtn.style.display = wrongCount > 0 ? 'block' : 'none';
+    retryBtn.textContent = 'Повторити помилки (' + wrongCount + ')';
+
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen-done').classList.add('active');
+  }
+
+  function retryWrong() {
+    const wrong = deck.filter((_, i) => results[i] === 'again');
+    if (!wrong.length) return;
+    deck = wrong;
+    idx = 0;
+    flipped = false;
+    results = [];
+    showScreen('study');
+    renderCard();
+  }
+
+  // ── INIT ───────────────────────────────────────────────────
+  renderHome();
+</script>
+</body>
+</html>
