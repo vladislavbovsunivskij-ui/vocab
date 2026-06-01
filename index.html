@@ -31,7 +31,6 @@
   .logo { font-size: 18px; font-weight: 700; letter-spacing: 2px; cursor: pointer; color: #f0f0f0; text-decoration: none; }
   .word-count { font-size: 12px; color: #555; }
 
-  /* Buttons */
   .btn {
     padding: 10px 20px;
     border-radius: 6px;
@@ -46,15 +45,12 @@
   }
   .btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .btn.primary { background: #f0f0f0; color: #0f0f0f; border-color: #f0f0f0; }
-  .btn.danger { color: #a05050; border-color: #2a1818; }
   .btn.full { width: 100%; }
   .btn-row { display: flex; gap: 12px; }
 
-  /* Screens */
   .screen { display: none; }
   .screen.active { display: block; }
 
-  /* Tabs */
   .tabs { display: flex; gap: 8px; margin-bottom: 24px; }
   .tab {
     padding: 6px 16px;
@@ -69,7 +65,6 @@
   }
   .tab.active { background: #f0f0f0; color: #0f0f0f; border-color: #f0f0f0; }
 
-  /* Textarea */
   textarea, select {
     width: 100%;
     background: #151515;
@@ -94,10 +89,8 @@
 
   .lang-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; color: #333; font-size: 14px; }
   .hint { font-size: 11px; color: #444; margin-bottom: 8px; letter-spacing: 0.5px; }
-
   .error { color: #e05050; font-size: 12px; margin-bottom: 10px; }
 
-  /* Word list */
   .section-label { font-size: 11px; color: #555; letter-spacing: 1px; margin-bottom: 12px; }
   .word-item {
     display: flex;
@@ -114,6 +107,34 @@
 
   .empty { text-align: center; color: #333; font-size: 14px; margin-top: 60px; }
   .empty .emoji { font-size: 40px; margin-bottom: 16px; }
+
+  /* Count picker */
+  .count-screen { padding-top: 20px; }
+  .count-title { font-size: 13px; color: #888; margin-bottom: 8px; }
+  .count-sub { font-size: 11px; color: #444; margin-bottom: 32px; }
+  .count-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  .count-btn {
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid #2a2a2a;
+    background: #151515;
+    color: #f0f0f0;
+    font-family: inherit;
+    font-size: 20px;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: center;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .count-btn:hover { border-color: #555; }
+  .count-btn:active { background: #1e1e1e; }
+  .count-btn .count-label { font-size: 11px; color: #555; display: block; margin-top: 4px; font-weight: 400; }
+  .count-btn.all-btn { font-size: 15px; }
 
   /* Study */
   .progress-row { display: flex; justify-content: space-between; font-size: 11px; color: #444; margin-bottom: 12px; }
@@ -132,7 +153,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    margin-bottom: 32px;
+    margin-bottom: 20px;
     user-select: none;
     transition: border-color 0.2s;
   }
@@ -141,11 +162,26 @@
   .card-word { font-size: 28px; font-weight: 700; letter-spacing: 1px; }
   .card-hint { font-size: 11px; color: #333; margin-top: 20px; }
 
+  .delete-card-btn {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #1e1010;
+    border-radius: 6px;
+    background: transparent;
+    color: #5a2a2a;
+    font-family: inherit;
+    font-size: 11px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    margin-bottom: 16px;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .delete-card-btn:hover { color: #a05050; border-color: #3a1818; }
+
   .answer-row { display: flex; gap: 12px; }
   .btn.wrong { color: #a05050; border-color: #2a1818; flex: 1; }
   .btn.right { flex: 1; }
 
-  /* Done screen */
   .done { text-align: center; padding-top: 40px; }
   .done .big-emoji { font-size: 48px; margin-bottom: 24px; }
   .done .score { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
@@ -164,9 +200,19 @@
   <div class="screen active" id="screen-home">
     <div class="btn-row" style="margin-bottom:32px">
       <button class="btn primary" onclick="showScreen('add')">+ Додати слова</button>
-      <button class="btn" id="study-btn" onclick="startStudy()">▶ Вчити</button>
+      <button class="btn" id="study-btn" onclick="showScreen('count')">▶ Вчити</button>
     </div>
     <div id="word-list-container"></div>
+  </div>
+
+  <!-- COUNT PICKER -->
+  <div class="screen" id="screen-count">
+    <div class="count-screen">
+      <div class="count-title">Скільки слів вчити?</div>
+      <div class="count-sub" id="count-sub">У списку 0 слів</div>
+      <div class="count-grid" id="count-grid"></div>
+      <button class="btn" onclick="showScreen('home')">← Назад</button>
+    </div>
   </div>
 
   <!-- ADD -->
@@ -176,7 +222,6 @@
       <button class="tab" id="tab-manual" onclick="switchTab('manual')">ВРУЧНУ</button>
     </div>
 
-    <!-- AUTO -->
     <div id="mode-auto">
       <div class="lang-row">
         <select id="from-lang">
@@ -203,7 +248,6 @@
       <button class="btn primary full" id="translate-btn" onclick="handleAutoTranslate()">Перекласти і додати</button>
     </div>
 
-    <!-- MANUAL -->
     <div id="mode-manual" style="display:none">
       <div class="hint">Формат: слово - переклад (через дефіс, тире або 2+ пробіли)</div>
       <textarea id="manual-input" rows="8" placeholder="Hund - собака&#10;Katze - кіт&#10;Haus - будинок"></textarea>
@@ -223,6 +267,7 @@
       <span id="correct-text">0 ✓</span>
     </div>
     <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    <div style="text-align:center;margin-bottom:10px" id="streak-dots"></div>
     <div class="card" onclick="flipCard()" id="study-card">
       <div class="card-lang" id="card-lang">DE</div>
       <div class="card-word" id="card-word">-</div>
@@ -232,6 +277,7 @@
       <button class="btn wrong" onclick="answer('again')">✗ Не знав</button>
       <button class="btn primary right" onclick="answer('ok')">✓ Знав</button>
     </div>
+    <button class="delete-card-btn" id="delete-card-btn" onclick="deleteCurrentCard()" style="display:none;margin-top:12px">🗑 Видалити зі списку назавжди</button>
   </div>
 
   <!-- DONE -->
@@ -242,7 +288,7 @@
       <div class="score-sub">правильних відповідей</div>
       <div class="actions">
         <button class="btn primary" id="retry-wrong-btn" onclick="retryWrong()" style="display:none">Повторити помилки</button>
-        <button class="btn" onclick="startStudy()">Почати заново</button>
+        <button class="btn" onclick="showScreen('count')">Ще раз</button>
         <button class="btn" onclick="showScreen('home')">← Головна</button>
       </div>
     </div>
@@ -250,22 +296,26 @@
 </div>
 
 <script>
-  // ── STATE ──────────────────────────────────────────────────
   let words = JSON.parse(localStorage.getItem('vocab_words') || '[]');
+  words = words.map(w => ({ streak: 0, ...w }));
   let deck = [], idx = 0, flipped = false, results = [];
+  const KNOWN_STREAK = 4;
 
   function save() {
     localStorage.setItem('vocab_words', JSON.stringify(words));
   }
 
-  // ── SCREENS ────────────────────────────────────────────────
   function showScreen(name) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById('screen-' + name).classList.add('active');
-    renderHome();
+    if (name === 'home') renderHome();
+    if (name === 'count') renderCountPicker();
   }
 
+  // ── HOME ───────────────────────────────────────────────────
   function renderHome() {
+    const known = words.filter(w => w.streak >= KNOWN_STREAK).length;
+    const learning = words.length - known;
     document.getElementById('word-count').textContent = words.length + ' слів';
     const btn = document.getElementById('study-btn');
     btn.textContent = '▶ Вчити (' + words.length + ')';
@@ -276,12 +326,24 @@
       container.innerHTML = `<div class="empty"><div class="emoji">📚</div><div>Слів поки немає.</div><div>Додай перші!</div></div>`;
       return;
     }
-    let html = '<div class="section-label">СПИСОК СЛІВ</div>';
+    let statsHtml = `<div style="display:flex;gap:16px;margin-bottom:24px">
+      <div style="background:#151515;border:1px solid #222;border-radius:8px;padding:12px 20px;flex:1;text-align:center">
+        <div style="font-size:20px;font-weight:700;color:#f0f0f0">${learning}</div>
+        <div style="font-size:10px;color:#555;margin-top:4px;letter-spacing:1px">ВИВЧАЮ</div>
+      </div>
+      <div style="background:#151515;border:1px solid #222;border-radius:8px;padding:12px 20px;flex:1;text-align:center">
+        <div style="font-size:20px;font-weight:700;color:#4a8a4a">${known}</div>
+        <div style="font-size:10px;color:#555;margin-top:4px;letter-spacing:1px">ЗНАЮ ✓</div>
+      </div>
+    </div>`;
+    let html = statsHtml + '<div class="section-label">СПИСОК СЛІВ</div>';
     words.forEach((w, i) => {
+      const isKnown = w.streak >= KNOWN_STREAK;
       html += `<div class="word-item">
-        <span class="word">${esc(w.word)}</span>
+        <span class="word" style="${isKnown ? 'color:#4a6a4a' : ''}">${esc(w.word)}</span>
         <div class="word-item-right">
           <span class="trans">${esc(w.translation)}</span>
+          ${isKnown ? '<span style="font-size:10px;color:#4a6a4a">✓</span>' : ''}
           <button class="del-btn" onclick="deleteWord(${i})">✕</button>
         </div>
       </div>`;
@@ -307,10 +369,34 @@
     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 
+  // ── COUNT PICKER ───────────────────────────────────────────
+  function renderCountPicker() {
+    const total = words.length;
+    const known = words.filter(w => w.streak >= KNOWN_STREAK).length;
+    const learning = total - known;
+    document.getElementById('count-sub').textContent = 'Вивчаю: ' + learning + '  •  Знаю: ' + known;
+
+    const options = [25, 50, 75, 100].filter(n => n < total);
+    const grid = document.getElementById('count-grid');
+
+    let html = '';
+    options.forEach(n => {
+      html += `<button class="count-btn" onclick="startStudy(${n})">
+        ${n}
+        <span class="count-label">слів</span>
+      </button>`;
+    });
+    // Always show "All" button
+    html += `<button class="count-btn all-btn" onclick="startStudy(${total})" style="grid-column: span 2;">
+      Всі ${total}
+      <span class="count-label">слів</span>
+    </button>`;
+
+    grid.innerHTML = html;
+  }
+
   // ── TABS ───────────────────────────────────────────────────
-  let currentTab = 'auto';
   function switchTab(tab) {
-    currentTab = tab;
     document.getElementById('tab-auto').classList.toggle('active', tab === 'auto');
     document.getElementById('tab-manual').classList.toggle('active', tab === 'manual');
     document.getElementById('mode-auto').style.display = tab === 'auto' ? 'block' : 'none';
@@ -359,7 +445,7 @@
       document.getElementById('auto-input').value = '';
       showScreen('home');
     } catch (e) {
-      errorEl.textContent = 'Помилка перекладу. Перевір інтернет-з\'єднання.';
+      errorEl.textContent = "Помилка перекладу. Перевір інтернет-з'єднання.";
     }
 
     btn.disabled = false;
@@ -390,13 +476,31 @@
   }
 
   // ── STUDY ──────────────────────────────────────────────────
-  function startStudy() {
+  function startStudy(count) {
     if (!words.length) return;
-    deck = [...words].sort(() => Math.random() - 0.5);
+    const total = count || words.length;
+
+    const learning = words.filter(w => w.streak < KNOWN_STREAK).sort(() => Math.random() - 0.5);
+    const known = words.filter(w => w.streak >= KNOWN_STREAK).sort(() => Math.random() - 0.5);
+
+    let selected = [];
+    if (known.length === 0 || total <= learning.length) {
+      // Only learning words or enough learning words to fill
+      selected = learning.slice(0, total);
+    } else {
+      // Mix: 80% learning, 20% known (minimum 1 known if any exist)
+      const knownCount = Math.max(1, Math.min(Math.round(total * 0.2), known.length));
+      const learningCount = Math.min(total - knownCount, learning.length);
+      selected = [...learning.slice(0, learningCount), ...known.slice(0, knownCount)];
+    }
+
+    // Shuffle the final deck
+    deck = selected.sort(() => Math.random() - 0.5);
     idx = 0;
     flipped = false;
     results = [];
-    showScreen('study');
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen-study').classList.add('active');
     renderCard();
   }
 
@@ -414,6 +518,14 @@
     document.getElementById('card-word').textContent = flipped ? deck[idx].translation : deck[idx].word;
     document.getElementById('card-hint').style.display = flipped ? 'none' : 'block';
     document.getElementById('answer-row').style.display = flipped ? 'flex' : 'none';
+    document.getElementById('delete-card-btn').style.display = flipped ? 'block' : 'none';
+    // Show streak dots
+    const streak = deck[idx].streak || 0;
+    let dots = '';
+    for (let i = 0; i < KNOWN_STREAK; i++) {
+      dots += `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;margin:0 2px;background:${i < streak ? '#4a8a4a' : '#2a2a2a'}"></span>`;
+    }
+    document.getElementById('streak-dots').innerHTML = dots;
   }
 
   function flipCard() {
@@ -421,8 +533,35 @@
     renderCard();
   }
 
+  function deleteCurrentCard() {
+    const wordToDelete = deck[idx];
+    // Remove from main words list
+    words = words.filter(w => w.word !== wordToDelete.word);
+    save();
+    // Remove from deck
+    deck.splice(idx, 1);
+    if (deck.length === 0) {
+      showScreen('home');
+      return;
+    }
+    if (idx >= deck.length) idx = deck.length - 1;
+    flipped = false;
+    renderCard();
+  }
+
   function answer(res) {
     results.push(res);
+    // Update streak on the original word in the words array
+    const currentWord = deck[idx];
+    const wordInList = words.find(w => w.word === currentWord.word);
+    if (wordInList) {
+      if (res === 'ok') {
+        wordInList.streak = (wordInList.streak || 0) + 1;
+      } else {
+        wordInList.streak = 0;
+      }
+      save();
+    }
     if (idx + 1 >= deck.length) {
       showDone();
     } else {
@@ -455,11 +594,11 @@
     idx = 0;
     flipped = false;
     results = [];
-    showScreen('study');
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen-study').classList.add('active');
     renderCard();
   }
 
-  // ── INIT ───────────────────────────────────────────────────
   renderHome();
 </script>
 </body>
